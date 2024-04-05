@@ -1,53 +1,43 @@
 import { verify } from "jsonwebtoken";
+import type { CloudFrontRequestEvent, CloudFrontFunctionsEvent, CloudFrontRequestCallback, CloudFrontResponse } from "aws-lambda";
+import { SSMClient, GetParameterCommand } from "@aws-sdk/client-ssm";
 
-interface CloudfrontEvent {
-    version: string,
-    context: AWSLambda.CloudFrontEvent['config']
-    viewer : {
-        ip: string
-    },
-    request: CFRequest
-}
+const ssmClient = new SSMClient();
 
-interface CFRequest extends Omit<AWSLambda.CloudFrontRequest, 'headers'> {
-    cookies: string,
-    headers: CloudFrontHeaders
-}
+const parameterCommand = new GetParameterCommand({ Name: 'JWT_SECRET_KEY', WithDecryption: true });
 
-interface CloudFrontHeaders {
-    [name: string]: {
-        key?: string | undefined;
-        value: string;
-    };
-}
-
-
-interface CloudFrontResponse extends Omit<AWSLambda.CloudFrontResultResponse, 'headers'> {
-    statusCode: number,
-    headers?: CloudFrontHeaders
-}
-
-export const handler = async (event: CloudfrontEvent) => {
-    let authToken = '';
-    const secret = process.env.JWT_SECRET ?? '';
-
-    if (event.request.headers['Authorization']) 
-        authToken = event.request.headers['Authorization'].value.replace("Bearer ", "")
-
-    const response: CloudFrontResponse = {
-        statusCode: 200,
-        status: 'OK'
+const response: CloudFrontResponse = {
+    status: '200',
+    statusDescription: 'OK',
+    headers: {
+        'cache-control': [{
+            key: 'Cache-Control',
+            value: 'max-age=100'
+        }],
+        'content-type': [{
+            key: 'Content-Type',
+            value: 'application/json'
+        }]
     }
+};
+
+export const handler = async (event: CloudFrontRequestEvent, _context: CloudFrontFunctionsEvent['context'], callback: CloudFrontRequestCallback) => {
+    let authToken = '';
+    const secretKey = (await ssmClient.send(parameterCommand)).Parameter?.Value || '';
+    const request = event.Records[0].cf.request;
+
+    if (request.headers['authorization'])
+        authToken = request.headers['authorization'][0].value.replace("Bearer ", "")
 
     try {
-        verify(authToken, secret);
+        verify(authToken, secretKey);
     }
 
-    catch(err) {
-        response.status = 'Unauthorized';
-        response.statusCode = 401;
-        console.error(err);
+    catch(error) {
+        response.status = '401';
+        response.statusDescription = 'Unauthorized';
+        console.error(error);
     }
 
-    return response;
+    callback(null, response);
 }

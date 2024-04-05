@@ -10,10 +10,11 @@
     "typescript": "^5.0.0"
   },
   "scripts": {
-    "build": "bun build index.ts --outdir ./build --target node --minify-whitespace"
+    "build": "bun build index.ts --target node --outfile=build/index.mjs  --external @aws-sdk/client-ssm --minify-whitespace"
   },
   "type": "module",
   "dependencies": {
+    "@aws-sdk/client-ssm": "^3.549.0",
     "jsonwebtoken": "^9.0.2"
   }
 }
