@@ -1,0 +1,19 @@
+{
+  "name": "jwt-validator",
+  "module": "origin-request.ts",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.136",
+    "@types/bun": "latest",
+    "@types/jsonwebtoken": "^9.0.6"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "build": "bun build index.ts --outdir ./build --target node --minify-whitespace"
+  },
+  "type": "module",
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  }
+}

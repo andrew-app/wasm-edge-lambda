@@ -1,0 +1,9 @@
+{
+    "name": "rust-wasm-on-lambda-edge",
+    "version": "0.1.0",
+    "description": "node wrapper for the Go/WASM module",
+    "private": true,
+    "scripts": {
+      "start": "node main.js"
+    }
+  }
