@@ -2,7 +2,7 @@ import { verify } from "jsonwebtoken";
 import type { CloudFrontRequestEvent, CloudFrontFunctionsEvent, CloudFrontRequestCallback, CloudFrontResponse } from "aws-lambda";
 import { SSMClient, GetParameterCommand } from "@aws-sdk/client-ssm";
 
-const ssmClient = new SSMClient();
+const ssmClient = new SSMClient({region: 'ap-southeast-2'});
 
 const parameterCommand = new GetParameterCommand({ Name: 'JWT_SECRET_KEY', WithDecryption: true });
 
