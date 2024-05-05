@@ -6,7 +6,7 @@ struct Claims {
    sub: String,
    name: String,
    exp: usize,
-   scope: Vec<String>
+   permissions: Vec<String>
 }
 
 fn main() {
@@ -20,7 +20,7 @@ fn verify_token(token: &str) -> bool {
     match decoded_token {
         Ok(token_data) => {
             println!("{:?}", token_data.claims);
-            return has_permissions(token_data.claims.scope, valid_permissions);
+            return has_permissions(token_data.claims.permissions, valid_permissions);
         },
         Err(e) => {
             println!("{:?}", e);
