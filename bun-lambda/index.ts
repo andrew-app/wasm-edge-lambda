@@ -1,12 +1,12 @@
 import { verify } from "jsonwebtoken";
-import type { CloudFrontRequestEvent, CloudFrontFunctionsEvent, CloudFrontRequestCallback, CloudFrontResponse } from "aws-lambda";
+import type { CloudFrontRequestEvent, CloudFrontFunctionsEvent, CloudFrontRequestCallback, CloudFrontResponse, CloudFrontRequestResult } from "aws-lambda";
 import { SSMClient, GetParameterCommand } from "@aws-sdk/client-ssm";
 
 const ssmClient = new SSMClient({region: 'ap-southeast-2'});
 
 const parameterCommand = new GetParameterCommand({ Name: 'JWT_SECRET_KEY', WithDecryption: true });
 
-const response: CloudFrontResponse = {
+const response: CloudFrontRequestResult = {
     status: '200',
     statusDescription: 'OK',
     headers: {
@@ -16,7 +16,7 @@ const response: CloudFrontResponse = {
         }],
         'content-type': [{
             key: 'Content-Type',
-            value: 'application/json'
+            value: 'text/plain'
         }]
     }
 };
@@ -36,6 +36,7 @@ export const handler = async (event: CloudFrontRequestEvent, _context: CloudFron
     catch(error) {
         response.status = '401';
         response.statusDescription = 'Unauthorized';
+        response.body = 'Error: Invalid token\n';
         console.error(error);
     }
 
