@@ -1,9 +1,7 @@
-const fs = require('node:fs');
+import {verify} from 'rust-edge-lambda';
 
-const buffer = fs.readFileSync('../go-edge-lambda/main.wasm');
+const main = () => {
+  console.log(verify('hello world!'))
+}
 
-WebAssembly.instantiate(buffer, {})
-.then(result => {
-    console.log(result)
-  })
-  .catch(console.error);
+main();

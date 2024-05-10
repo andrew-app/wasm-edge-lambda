@@ -1,9 +1,13 @@
 {
     "name": "rust-wasm-on-lambda-edge",
     "version": "0.1.0",
-    "description": "node wrapper for the Go/WASM module",
+    "description": "node wrapper for the Rust WASM module",
+    "type": "module",
     "private": true,
     "scripts": {
       "start": "node main.js"
+    },
+    "dependencies": {
+      "rust-edge-lambda": "file:../rust-edge-lambda/token-validator"
     }
   }

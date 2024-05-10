@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
+use wasm_bindgen::{prelude::*};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
@@ -9,12 +10,8 @@ struct Claims {
    permissions: Vec<String>
 }
 
-fn main() {
-    let token = "".to_string();
-    println!("{}", if verify_token(&token) { "Token is valid" } else { "Token is invalid" });
-}
-
-fn verify_token(token: &str) -> bool {
+#[wasm_bindgen]
+pub fn verify(token: &str) -> bool {
     let decoded_token = decode::<Claims>(&token, &DecodingKey::from_secret("secret".as_ref()), &Validation::new(Algorithm::HS256));
     let valid_permissions = vec!["view:data"];
     match decoded_token {

@@ -1,0 +1,9 @@
+---
+version: '3'
+
+services:
+  build-env:
+    build:
+      context: rust-edge-lambda
+      dockerfile: Dockerfile
+    container_name: rust-wasm-build-env
