@@ -1,13 +1,15 @@
 {
-    "name": "rust-wasm-on-lambda-edge",
-    "version": "0.1.0",
-    "description": "node wrapper for the Rust WASM module",
-    "type": "module",
-    "private": true,
-    "scripts": {
-      "start": "node main.js"
-    },
-    "dependencies": {
-      "rust-edge-lambda": "file:../rust-edge-lambda/token-validator"
-    }
+  "name": "node-adapter",
+  "module": "index.js",
+  "type": "module",
+  "dependencies": {
+    "rust-edge-lambda": "file:../rust-edge-lambda/pkg"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "build": "esbuild index.js --bundle --platform=node --target=node20 --outfile=build/index.cjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.21.1"
   }
+}

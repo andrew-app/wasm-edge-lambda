@@ -1,9 +1,17 @@
----
 version: '3'
-
 services:
-  build-env:
+  rust-build-env:
+    working_dir: /app
+    volumes:
+      - ./rust-edge-lambda:/app
     build:
       context: rust-edge-lambda
       dockerfile: Dockerfile
-    container_name: rust-wasm-build-env
+    container_name: rust-build-env
+  node-build-env:
+    image: node:lts-slim
+    working_dir: /app
+    volumes:
+      - ./rust-edge-lambda:/app/rust-edge-lambda
+      - ./node-adapter:/app/node-adapter
+    container_name: node-build-env

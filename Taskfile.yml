@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+  build-wasm:
+    cmds:
+      - docker compose run --rm rust-build-env wasm-pack build --target nodejs --release
+      - docker compose run --rm -w /app/node-adapter node-build-env npm i
+      - docker compose run --rm -w /app/node-adapter node-build-env npm run build
+      - cp rust-edge-lambda/pkg/verify_bg.wasm node-adapter/build/verify_bg.wasm
+      - cd node-adapter/build && zip -r verify-m2m.zip . && mv verify-m2m.zip ../../verify-m2m.zip
+    silent: false
+  
+  run:
+    cmds:
+      - docker compose run --rm -w /app/node-adapter/build node-build-env node index.cjs
+    silent: true
