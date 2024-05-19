@@ -8,6 +8,8 @@ services:
       context: rust-edge-lambda
       dockerfile: Dockerfile
     container_name: rust-build-env
+    environment:
+      - JWT_SECRET
   node-build-env:
     image: node:lts-slim
     working_dir: /app

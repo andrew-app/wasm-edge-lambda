@@ -4,11 +4,16 @@ const response = {
     status: '200',
     statusDescription: 'OK',
     headers: {
+        'cache-control': [{
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate, max-age=0'
+        }],
         'content-type': [{
             key: 'Content-Type',
             value: 'application/json'
         }]
-    }
+    },
+    bodyEncoding: 'text',
 };
 
 export const handler = async (event, _context, callback) => {
@@ -27,12 +32,10 @@ export const handler = async (event, _context, callback) => {
         console.error(error);
     }
 
-    if (!isValidToken) {
+    if (isValidToken === false) {
         response.status = '401';
         response.statusDescription = 'Unauthorized';
-        response.body = {
-            error: 'Invalid token'
-        }
+        response.body = JSON.stringify({ error: 'Invalid token' });
     }
 
     callback(null, response);
