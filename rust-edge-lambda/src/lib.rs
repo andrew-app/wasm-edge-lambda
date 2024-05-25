@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
 use wasm_bindgen::prelude::*;
-use std::fmt;
+mod types;
+use types::cloudfront as cf;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
@@ -21,42 +22,35 @@ macro_rules! console_log {
     ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
 }
 
-#[derive(Debug)]
-pub enum Status {
-    Ok,
-    Unauthorized,
-    Forbidden,
-}
-
-impl fmt::Display for Status {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Status::Ok => write!(f, "200"),
-            Status::Unauthorized => write!(f, "401"),
-            Status::Forbidden => write!(f, "403"),
-        }
-    }
-}
-
 const JWT_SECRET: &'static str = env!("JWT_SECRET");
 
 #[wasm_bindgen]
-pub fn verify(token: &str) -> String {
-    
+pub async fn auth_handler(event: JsValue) -> bool {
+    let request = cf::Event::request_from_event(event);
+    let token: String = match request {
+        Ok(req) => {
+            let auth_header = req.headers.get("authorization").unwrap();
+            auth_header[0].value.replace("Bearer ", "")
+        },
+        Err(e) => {
+            console_log!("{:?}",e);
+            return false;
+        }
+    };
+
     let decoded_token = decode::<Claims>(&token, &DecodingKey::from_secret(JWT_SECRET.as_ref()), &Validation::new(Algorithm::HS256));
     let valid_permissions = vec!["view:data"];
     match decoded_token {
         Ok(token_data) => {
-            console_log!("{:?}", token_data.claims);
             if token_data.claims.permissions.iter().all(|permission| valid_permissions.contains(&permission.as_str())) {
-                return Status::Ok.to_string();
+                return true;
             } else {
-                return Status::Forbidden.to_string();
+                return false;
             }
         },
         Err(e) => {
             console_log!("{}",e);
-            return Status::Unauthorized.to_string();
+            return false;
         }
     }
 }
