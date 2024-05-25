@@ -15,10 +15,6 @@ const response: CloudFrontRequestResult = {
     status: '',
     statusDescription: '',
     headers: {
-        'cache-control': [{
-            key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate, max-age=0'
-        }],
         'content-type': [{
             key: 'Content-Type',
             value: 'application/json'
