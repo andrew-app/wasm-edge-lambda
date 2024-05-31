@@ -2,10 +2,10 @@ use base64::{engine::Engine, prelude::BASE64_STANDARD};
 use serde::{Deserialize, Serialize};
 #[allow(unused_imports)]
 use serde_json::Value;
-use std::collections::BTreeMap;
-use wasm_bindgen::{intern, prelude::*};
 use serde_wasm_bindgen::Error;
 use serde_wasm_bindgen::Serializer;
+use std::collections::BTreeMap;
+use wasm_bindgen::{intern, prelude::*};
 
 pub(crate) type Event = CloudFrontRecords;
 
@@ -64,8 +64,6 @@ pub(crate) enum EventType {
     ViewerRequest,
     ViewerResponse,
 }
-
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
