@@ -4,10 +4,18 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::BTreeMap;
 use wasm_bindgen::{intern, prelude::*};
+use serde_wasm_bindgen::Error;
+use serde_wasm_bindgen::Serializer;
 
 pub(crate) type Event = CloudFrontRecords;
 
 type JsResult<T> = Result<T, JsValue>;
+
+type ConvertResult<T> = Result<T, Error>;
+
+pub fn convert_request<T: serde::ser::Serialize + ?Sized>(value: &T) -> ConvertResult<JsValue> {
+    value.serialize(&Serializer::new().serialize_maps_as_objects(true))
+}
 
 #[derive(Debug, Clone, Deserialize)]
 pub(crate) struct CloudFrontRecords {
@@ -60,6 +68,7 @@ pub(crate) enum EventType {
     ViewerRequest,
     ViewerResponse,
 }
+
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -214,19 +223,4 @@ where
 {
     let deserialized = serde_wasm_bindgen::from_value(input)?;
     Ok(deserialized)
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct CloudFrontUnauthorizedError {
-    status: String
-}
-
-
-impl CloudFrontUnauthorizedError {
-    fn new() -> Self {
-        Self {
-            status: "401".to_string()
-        }
-    }
 }
