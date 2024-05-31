@@ -13,10 +13,6 @@ type JsResult<T> = Result<T, JsValue>;
 
 type ConvertResult<T> = Result<T, Error>;
 
-pub fn convert_request<T: serde::ser::Serialize + ?Sized>(value: &T) -> ConvertResult<JsValue> {
-    value.serialize(&Serializer::new().serialize_maps_as_objects(true))
-}
-
 #[derive(Debug, Clone, Deserialize)]
 pub(crate) struct CloudFrontRecords {
     #[serde(rename = "Records")]
@@ -223,4 +219,8 @@ where
 {
     let deserialized = serde_wasm_bindgen::from_value(input)?;
     Ok(deserialized)
+}
+
+pub fn convert_request<T: serde::ser::Serialize + ?Sized>(value: &T) -> ConvertResult<JsValue> {
+    value.serialize(&Serializer::new().serialize_maps_as_objects(true))
 }
