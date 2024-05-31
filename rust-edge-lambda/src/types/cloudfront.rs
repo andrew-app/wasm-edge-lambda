@@ -215,3 +215,18 @@ where
     let deserialized = serde_wasm_bindgen::from_value(input)?;
     Ok(deserialized)
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CloudFrontUnauthorizedError {
+    status: String
+}
+
+
+impl CloudFrontUnauthorizedError {
+    fn new() -> Self {
+        Self {
+            status: "401".to_string()
+        }
+    }
+}

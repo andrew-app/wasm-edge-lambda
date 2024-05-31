@@ -24,7 +24,7 @@ const response: CloudFrontRequestResult = {
     body: ''
 };
 
-export const handler = async (event: CloudFrontRequestEvent, _context: CloudFrontFunctionsEvent['context'], callback: CloudFrontRequestCallback) => {
+export const handler = (event: CloudFrontRequestEvent, _context: CloudFrontFunctionsEvent['context'], callback: CloudFrontRequestCallback) => {
     let authToken = '';
 
     const secret = (await ssmClient.send(parameterCommand)).Parameter?.Value || '';

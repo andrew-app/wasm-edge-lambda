@@ -197,6 +197,7 @@ name = "rust-edge-lambda"
 version = "0.1.0"
 dependencies = [
  "base64 0.22.1",
+ "js-sys",
  "jsonwebtoken",
  "serde",
  "serde-wasm-bindgen",
