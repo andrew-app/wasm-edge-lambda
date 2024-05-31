@@ -1,6 +1,7 @@
 import { verify, type JwtPayload } from "jsonwebtoken";
 
-import type { CloudFrontRequestEvent, CloudFrontFunctionsEvent, CloudFrontRequestCallback, CloudFrontResponse, CloudFrontRequestResult } from "aws-lambda";
+import type { CloudFrontRequestEvent, CloudFrontFunctionsEvent, CloudFrontRequestCallback } from "aws-lambda";
+import { ExceptionHandler } from "./errors";
 
 interface CustomClaims extends JwtPayload {
     permissions?: string[];
@@ -11,23 +12,13 @@ declare module "bun" {
     }
 }
 
-const response: CloudFrontRequestResult = {
-    status: '',
-    statusDescription: '',
-    headers: {
-        'content-type': [{
-            key: 'Content-Type',
-            value: 'application/json'
-        }]
-    },
-    bodyEncoding: 'text',
-    body: ''
-};
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export const handler = (event: CloudFrontRequestEvent, _context: CloudFrontFunctionsEvent['context'], callback: CloudFrontRequestCallback) => {
     let authToken = '';
 
-    const secret = process.env.JWT_SECRET;
+    const exceptionHandler = new ExceptionHandler(callback);
+    
     const request = event.Records[0].cf.request;
     const validPermissions = ['view:data'];
     let isAuthorised = false;
@@ -36,7 +27,7 @@ export const handler = (event: CloudFrontRequestEvent, _context: CloudFrontFunct
         authToken = request.headers['authorization'][0].value.replace("Bearer ", "")
 
     try {
-        const decodedToken = verify(authToken, secret) as CustomClaims;
+        const decodedToken = verify(authToken, JWT_SECRET) as CustomClaims;
 
         if (decodedToken.permissions) {
             isAuthorised = validPermissions.every(permission => decodedToken.permissions?.includes(permission) ?? false);
@@ -46,17 +37,12 @@ export const handler = (event: CloudFrontRequestEvent, _context: CloudFrontFunct
     }
 
     catch(error) {
-        response.status = '401';
-        response.statusDescription = 'Unauthorized';
-        response.body = JSON.stringify({error: 'Invalid token'});
         console.error(error);
-        callback(null, response);
+        exceptionHandler.onUnauthorisedRequest('Invalid token');
     }
 
     if (!isAuthorised) {
-        response.status = '403';
-        response.statusDescription = 'Forbidden';
-        callback(null, response);
+        exceptionHandler.onForbiddenRequest('Not authorised to view data.');
     }
 
     callback(null, request);

@@ -50,7 +50,7 @@ pub fn auth_handler(event: JsValue, callback: &js_sys::Function) {
         }
     };
 
-    let js_request = convert_request(&request.clone().unwrap()).unwrap();
+    let js_cf_request = convert_request(&request.clone().unwrap()).unwrap();
 
     let valid_permissions = ["view:data"];
 
@@ -69,7 +69,7 @@ pub fn auth_handler(event: JsValue, callback: &js_sys::Function) {
                 .all(|permission| valid_permissions.contains(&permission.as_str()))
             {
                 console_log!("Authorized");
-                let _ = callback.call2(&JsValue::NULL, &JsValue::NULL, &js_request);
+                let _ = callback.call2(&JsValue::NULL, &JsValue::NULL, &js_cf_request);
             } else {
                 let _ = callback.call2(&JsValue::NULL, &JsValue::NULL, &JsValue::NULL);
             }
