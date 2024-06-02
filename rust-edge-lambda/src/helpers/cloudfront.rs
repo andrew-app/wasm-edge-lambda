@@ -219,6 +219,6 @@ where
     Ok(deserialized)
 }
 
-pub fn convert_request<T: serde::ser::Serialize + ?Sized>(value: &T) -> ConvertResult<JsValue> {
+pub fn convert_cf<T: serde::ser::Serialize + ?Sized>(value: &T) -> ConvertResult<JsValue> {
     value.serialize(&Serializer::new().serialize_maps_as_objects(true))
 }
