@@ -1,62 +1,86 @@
+use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
-use jsonwebtoken::{decode, DecodingKey, Validation, Algorithm};
 use wasm_bindgen::prelude::*;
-use std::fmt;
+mod helpers;
+mod errors;
+use errors::exception::ExceptionHandler; 
+use cf::convert_cf;
+use helpers::cloudfront::{self as cf};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
     sub: String,
     name: String,
     exp: usize,
-    permissions: Vec<String>
+    permissions: Vec<String>,
 }
 
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
+
+    #[wasm_bindgen(js_namespace = console)]
+    fn error(s: &str);
 }
 
 macro_rules! console_log {
     ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
 }
 
-#[derive(Debug)]
-pub enum Status {
-    Ok,
-    Unauthorized,
-    Forbidden,
+macro_rules! console_error {
+    ($($t:tt)*) => (error(&format_args!($($t)*).to_string()))
 }
 
-impl fmt::Display for Status {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Status::Ok => write!(f, "200"),
-            Status::Unauthorized => write!(f, "401"),
-            Status::Forbidden => write!(f, "403"),
-        }
-    }
-}
-
-const JWT_SECRET: &'static str = env!("JWT_SECRET");
+const JWT_SECRET: &str = env!("JWT_SECRET");
 
 #[wasm_bindgen]
-pub fn verify(token: &str) -> String {
-    
-    let decoded_token = decode::<Claims>(&token, &DecodingKey::from_secret(JWT_SECRET.as_ref()), &Validation::new(Algorithm::HS256));
-    let valid_permissions = vec!["view:data"];
+pub fn auth_handler(event: JsValue, callback: &js_sys::Function) {
+    let request = cf::Event::request_from_event(event);
+    let exception_handler = ExceptionHandler::new(callback.clone());
+
+    let token = match &request {
+        Ok(req) => req
+            .headers
+            .get("authorization")
+            .map_or_else(String::new, |auth_header| {
+                auth_header[0].value.replace("Bearer ", "")
+            }),
+        Err(e) => {
+            console_error!("{:?}", e);
+            exception_handler.on_unauthorised_request();
+            panic!("{:?}", e);
+        }
+    };
+
+    let js_cf_request = convert_cf(&request.clone().unwrap()).unwrap();
+
+    let valid_permissions = ["view:data"];
+
+    let decoded_token = decode::<Claims>(
+        &token,
+        &DecodingKey::from_secret(JWT_SECRET.as_ref()),
+        &Validation::new(Algorithm::HS256),
+    );
+
     match decoded_token {
         Ok(token_data) => {
-            console_log!("{:?}", token_data.claims);
-            if token_data.claims.permissions.iter().all(|permission| valid_permissions.contains(&permission.as_str())) {
-                return Status::Ok.to_string();
+            if token_data
+                .claims
+                .permissions
+                .iter()
+                .all(|permission| valid_permissions.contains(&permission.as_str()))
+            {
+                console_log!("Authorized");
+                let _ = callback.call2(&JsValue::NULL, &JsValue::NULL, &js_cf_request);
             } else {
-                return Status::Forbidden.to_string();
+                exception_handler.on_forbidden_request();
             }
-        },
+        }
         Err(e) => {
-            console_log!("{}",e);
-            return Status::Unauthorized.to_string();
+            console_error!("{:?}", e);
+            exception_handler.on_unauthorised_request();
+            panic!("{:?}", e);
         }
     }
 }

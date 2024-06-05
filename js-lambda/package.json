@@ -4,17 +4,18 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.136",
     "@types/bun": "latest",
-    "@types/jsonwebtoken": "^9.0.6"
+    "@types/jsonwebtoken": "^9.0.6",
+    "esbuild": "^0.21.4"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "scripts": {
-    "build": "bun build index.ts --target node --outfile=build/index.mjs  --external @aws-sdk/client-ssm --minify-whitespace"
+    "build": "bun build index.ts --target node --outfile=build/index.mjs --minify-whitespace",
+    "es:build": "bun esbuild.config.js"
   },
   "type": "module",
   "dependencies": {
-    "@aws-sdk/client-ssm": "^3.549.0",
     "jsonwebtoken": "^9.0.2"
   }
 }
