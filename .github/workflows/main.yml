@@ -8,4 +8,4 @@ jobs:
     steps:
       - name: Hello world action step
         id: hello
-        uses: andrew-app/gotask-install@v0.1
+        uses: andrew-app/gotask-install@v1.0
